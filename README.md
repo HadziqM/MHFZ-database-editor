@@ -1,7 +1,7 @@
 # MHFZ-database-editor  <br />
 ## How to make app work  <br />
 download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.0 <br/>
-simple, just edit database.ini to your postgres credential  <br />
+extract then edit database.ini in database_editor folder to your postgres credential  <br />
 ## How to utilize app  <br />
 open database_editor.exe, you need to press "start" button to connect to your database  <br />
 the label in bottom of app is kind of terminal to show output  <br />
