@@ -12,7 +12,7 @@ the label in bottom of app is kind of terminal to show output  <br />
 - use "set all" to set value in calculator to all username in database  <br />
 - use "set default" to set value in calculator to be default value for your course   <br />
 - set default mean whenever new username created in your database   <br />
-it will have it will have the set value automatically   <br />
+it will have the set value automatically   <br />
 ### GCP editor   <br />
 - you can search your character name with "search" button  <br />
 - you can scan the database with "scan all" to scan not null character name  <br />
