@@ -21,8 +21,8 @@ it will have it will have the set value automatically   <br />
 - use "add all" to add value in input with all character in database  <br />
 - use "sub specific" to substract your character gcp with input value  <br />
 - use "sub all" to substract  gcp of all character in database with input value  <br />
-*all the subtract value cant go bellow 0, if it calculated bellow 0 it will be 0 instead   <br />
-*all command only work on not null gcp  <br />
+**_all the subtract value cant go bellow 0, if it calculated bellow 0 it will be 0 instead_**   <br />
+**_all command only work on not null gcp_**  <br />
 ### Transmog editor   <br />
 - make sure there is skin_hist.bin in your directory (its added there as default dont worry)   <br />
 - use "set specific" to unlock all transmog in game to specific character   <br />
@@ -46,4 +46,4 @@ it will have it will have the set value automatically   <br />
 - rename your file to road.csv <br />
 - checklist header if your file has header <br />
 - use "upload" to upload your file to database <br />
-*I already add road.csv in road folder that consist latest Luna_Titania#8587 shop list and SephVII#2197 permit <br />  
+**_I already add road.csv in road folder that consist latest Luna_Titania#8587 shop list and SephVII#2197 permit_** <br />  
