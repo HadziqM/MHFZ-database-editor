@@ -10,20 +10,20 @@ press "reconnect" button to solve the issue <br />
 ### Course editor  <br />
 - you can search your user name with "search" button  <br />
 - you can checklist the course to select course you need to operate with  <br />
-- use "set specific" to set value in calculator to your specific username   <br />
-- use "set all" to set value in calculator to all username in database  <br />
-- use "set default" to set value in calculator to be default value for your course   <br />
+- use "set specific" to set value in calculator for your specific username   <br />
+- use "set all" to set value in calculator for all username in database  <br />
+- use "set default" make it the dafault course   <br />
 - set default mean whenever new username created in your database   <br />
 it will have the set value automatically   <br />
 ### GCP editor   <br />
 - you can search your character name with "search" button  <br />
-- you can scan the database with "scan all" to scan not null character name  <br />
-- use "set specific" to set value in input to your specific character name   <br />
-- use "set all" to set value in input to all character in database  <br />
-- use "add specific" to add value in input with your specific character name   <br />
-- use "add all" to add value in input with all character in database  <br />
-- use "sub specific" to substract your character gcp with input value  <br />
-- use "sub all" to substract  gcp of all character in database with input value  <br /> <br />
+- you can scan the database with "scan all" to scan character name  <br />
+- use "set specific" to set value in input for your specific character name   <br />
+- use "set all" to set value in input for all character in database  <br />
+- use "add specific" to increase your charachter gcp value  <br />
+- use "add all" to to increase all charachter gcp value <br />
+- use "sub specific"  to substract your charachter gcp value <br />
+- use "sub all" to substract all charachter gcp value  <br /> <br />
 **_all the subtract value cant go bellow 0, if it calculated bellow 0 it will be 0 instead_**   <br /> <br />
 **_all command only work on not null gcp_**  <br />
 ### Transmog editor   <br />
