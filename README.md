@@ -46,7 +46,7 @@ it will have the set value automatically   <br />
 - use "turn on all" to reset all specific character login boost <br /> <br />
 **_login boost may not worked and may work, fix not done yet_**
 ### Road Edit
-- you can open csv file from your pc and upload it to postgres <br />
+- you can open csv file from your local and upload it to postgres <br />
 - check "header" if have header in your csv file <br />
 - you can add add item tou your roadshop at other item section <br />
 - you can decode from hexa code item by using "conv ferias" and "conv untranslated" <br />
