@@ -1,10 +1,12 @@
 # MHFZ-database-editor  <br />
 ## How to make app work  <br />
-download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.0 <br/>
+download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.1 <br/>
 extract then edit database.ini in database_editor folder to your postgres credential  <br />
 ## How to utilize app  <br />
-open database_editor.exe, you need to press "start" button to connect to your database  <br />
+open database_editor.exe  <br />
 the label in bottom of app is kind of terminal to show output  <br />
+if you got cur not defined error in console then its connection timed out <br />
+press "reconnect" button to solve the issue <br />
 ### Course editor  <br />
 - you can search your user name with "search" button  <br />
 - you can checklist the course to select course you need to operate with  <br />
@@ -34,7 +36,7 @@ it will have the set value automatically   <br />
 - use "set all prem" to set premium gacha coin in input value to all character    <br />
 - use "set all trial" to set trial gacha coin in input value to all character   <br />
 ### Guild Edit
-- use "sp spec" to set RP from input value to specific guild name   <br />
+- use "rp spec" to set RP from input value to specific guild name   <br />
 - use "rp all" to set RP from input value to all guild in database  <br />
 ### Login Boost Edit
 - use "search" to know your character id <br />
@@ -42,9 +44,15 @@ it will have the set value automatically   <br />
 - use "turn on spe" to reset specific character login boost <br />
 - use "turn off all" to turn off all character login boost <br />
 - use "turn on all" to reset all specific character login boost <br />
+**_login boost may not worked and may work,fix not done yet_**
 ### Road Edit
-- place your road shop.csv in road folder <br />
-- rename your file to road.csv <br />
-- checklist header if your file has header <br />
-- use "upload" to upload your file to database <br /> <br />
-**_I already add road.csv in road folder that consist latest Luna_Titania#8587 shop list and SephVII#2197 permit_** <br />  
+- you can open csv file from your pc and upload it to postgres <br />
+- check "header" if have header in your csv file <br />
+- you can add add item tou your roadshop at other item section <br />
+- you can decode from hexa code item by using "conv ferias" and "conv untranslated" <br />
+- if you get the hex from ferias you could use "conv ferias" <br />
+- if you want to add untraslated item in game, use "conv untranslated" to decode the hex <br />
+### Save file edit
+- you can upload savefile.bin in your local to postgres <br />
+- you can upload partner.bin in your local to postgres <br />
+**_be cautius that the charachter name will be overwriten with new savefile you uploaded_**
