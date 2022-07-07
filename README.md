@@ -43,8 +43,8 @@ it will have the set value automatically   <br />
 - use "turn off spe" to turn off specific character login boost <br />
 - use "turn on spe" to reset specific character login boost <br />
 - use "turn off all" to turn off all character login boost <br />
-- use "turn on all" to reset all specific character login boost <br />
-**_login boost may not worked and may work,fix not done yet_**
+- use "turn on all" to reset all specific character login boost <br /> <br />
+**_login boost may not worked and may work, fix not done yet_**
 ### Road Edit
 - you can open csv file from your pc and upload it to postgres <br />
 - check "header" if have header in your csv file <br />
@@ -54,5 +54,5 @@ it will have the set value automatically   <br />
 - if you want to add untraslated item in game, use "conv untranslated" to decode the hex <br />
 ### Save file edit
 - you can upload savefile.bin in your local to postgres <br />
-- you can upload partner.bin in your local to postgres <br />
+- you can upload partner.bin in your local to postgres <br /> <br />
 **_be cautius that the charachter name will be overwriten with new savefile you uploaded_**
