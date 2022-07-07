@@ -1,8 +1,11 @@
 import os
+import ast
+import csv
 import psycopg2
 import tkinter as tk
 from configparser import ConfigParser
 from tkinter import ttk
+from tkinter import filedialog as fd
 
 
 #TKINTER SETUP
@@ -15,6 +18,8 @@ def kinter():
     global tab5
     global tab6
     global tab7
+    global tab8
+    
     root = tk.Tk()
     root.title("Database Edit")
     tabControl = ttk.Notebook(root,height=400,width=300,padding=10)
@@ -26,14 +31,16 @@ def kinter():
     tab5 = ttk.Frame(tabControl)
     tab6 = ttk.Frame(tabControl)
     tab7 = ttk.Frame(tabControl)
+    tab8 = ttk.Frame(tabControl)
   
     tabControl.add(tab2, text ='Course')
     tabControl.add(tab3, text ='GCP')
-    tabControl.add(tab1, text ='Transmog')
+    tabControl.add(tab1, text ='mog')
     tabControl.add(tab4, text ='gacha')
     tabControl.add(tab5, text ='guild')
     tabControl.add(tab6, text ='login')
     tabControl.add(tab7, text ='road')
+    tabControl.add(tab8, text ='save')
     tabControl.pack(expand = 2, fill ="both")
     
 #POSTGRAS SETUP
@@ -55,12 +62,13 @@ def config(filename='database.ini', section='postgresql'):
     return db
 def setup():
     global conn
-    param = config()
-    conn = psycopg2.connect(**param)
-		
-    # create a cursor
     global cur
-    cur = conn.cursor()
+    try:
+        param = config()
+        conn = psycopg2.connect(**param)
+        cur = conn.cursor()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 # Call Funnction
 def join_int(tuple_of_string):
@@ -123,12 +131,14 @@ def rg_def(value):
     cur.execute(sql % str(value))
     conn.commit()
 def tra_ind(name):
-    sql = '''UPDATE characters SET skin_hist=pg_read_binary_file('%s') WHERE name= '%s' '''
-    cur.execute(sql % (cwd,name))
+    hexa = open(cwd,'rb').read().hex()
+    sql = '''UPDATE characters SET skin_hist=(decode('%s','hex')) WHERE name= '%s' '''
+    cur.execute(sql % (hexa,name))
     conn.commit()
 def tra_all():
-    sql = '''UPDATE characters SET skin_hist=pg_read_binary_file('%s') '''
-    cur.execute(sql % cwd)
+    hexa = open(cwd,'rb').read().hex()
+    sql = '''UPDATE characters SET skin_hist=(decode('%s','hex')) '''
+    cur.execute(sql % hexa)
     conn.commit()
 def prem_ind(name,value):
     sql = """ UPDATE public.characters SET gacha_prem = %s WHERE name = '%s' """
@@ -165,48 +175,94 @@ def log_id(name):
     global log_i
     log_i  = cur.fetchall();
 def log_tof(idn):
-    sql = ''' UPDATE public.login_boost_state SET end_time = 0 WHERE char_id= %s '''
+    sql = ''' UPDATE public.login_boost_state SET end_time = 1 WHERE char_id= %s '''
     cur.execute(sql % str(idn))
     conn.commit()
 def log_ton(idn):
-    log_tof(idn)
-    sql = '''UPDATE public.login_boost_state SET week_count = 1 WHERE char_id= %s'''
+    sql = '''UPDATE public.login_boost_state SET week_count = 5 WHERE char_id= %s'''
     sql1= '''UPDATE public.login_boost_state SET available = true WHERE char_id= %s'''
+    sql2 = ''' UPDATE public.login_boost_state SET end_time = 0 WHERE char_id= %s '''
     cur.execute(sql % str(idn))
-    conn.commit()
+    cur.execute(sql2 % str(idn))
     cur.execute(sql1 % str(idn))
     conn.commit()
 def log_tof_all():
-    sql = ''' UPDATE public.login_boost_state SET end_time = 0'''
+    sql = ''' UPDATE public.login_boost_state SET end_time = 1'''
     cur.execute(sql)
     conn.commit()
 def log_ton_all():
-    log_tof_all()
     sql = '''UPDATE public.login_boost_state SET week_count = 5 '''
     sql1= '''UPDATE public.login_boost_state SET available = true'''
-    sql2= '''UPDATE public.login_boost_state SET end_time = 2000000 WHERE week_req = 5'''
+    sql2= '''UPDATE public.login_boost_state SET end_time = 0'''
     cur.execute(sql)
     cur.execute(sql1)
     cur.execute(sql2)
     conn.commit()
+
 def road_up():
-    sql = '''TRUNCATE TABLE public.normal_shop_items RESTART IDENTITY'''
-    sql1='''COPY public.normal_shop_items FROM '%s' DELIMITER ',' CSV '''
+    file = open(road_dir)
+    csvrd = csv.reader(file)
+    sql2 = '''TRUNCATE TABLE public.normal_shop_items RESTART IDENTITY'''
+    sql = ''' INSERT INTO normal_shop_items (shoptype,shopid,itemhash,itemid,points,tradequantity,rankreqlow,rankreqhigh,rankreqg,storelevelreq,maximumquantity,boughtquantity,roadfloorsrequired,weeklyfataliskills) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'''
+    sql1 = ''' INSERT INTO normal_shop_items (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'''
     if ( cb_head.get()==1):
-        sql1 = sql1 + '''HEADER'''
+        header_id = []
+        header_id = next(csvrd)
+        cur.execute(sql2)        
+        for row in csvrd:
+            a = []
+            a.append(row)
+            cur.execute(sql1 % (header_id[0],header_id[1],header_id[2],header_id[3],header_id[4],header_id[5],header_id[6],header_id[7],header_id[8],header_id[9],header_id[10],header_id[11],header_id[12],header_id[13],a[0][0],a[0][1],a[0][2],a[0][3],a[0][4],a[0][5],a[0][6],a[0][7],a[0][8],a[0][9],a[0][10],a[0][11],a[0][12],a[0][13]))
+    else:
+        cur.execute(sql2)    
+        for row in csvrd:
+            a = []
+            a.append(row)
+            cur.execute(sql % (a[0][0],a[0][1],a[0][2],a[0][3],a[0][4],a[0][5],a[0][6],a[0][7],a[0][8],a[0][9],a[0][10],a[0][11],a[0][12],a[0][13]))
+    conn.commit()
+            
+def save_save(name):
+    hexa = open(savefile,'rb').read().hex()
+    sql = '''UPDATE characters SET savedata=(decode('%s','hex')) WHERE name= '%s' '''
+    cur.execute(sql % (hexa,name))
+    conn.commit()
+def save_partner(name):
+    hexa = open(partner,'rb').read().hex()
+    sql = '''UPDATE characters SET partner=(decode('%s','hex')) WHERE name= '%s' '''
+    cur.execute(sql % (hexa,name))
+    conn.commit()
+def road_scan():
+    sql = 'SELECT itemhash FROM public.normal_shop_items'
     cur.execute(sql)
+    global road_s
+    road_s = cur.fetchall();
+    global road_i
+    road_i = len(road_s)    
+def road_add(item,price,quant,floor,fata):
+    sql = ''' INSERT INTO normal_shop_items (shoptype,shopid,itemhash,itemid,points,tradequantity,rankreqlow,rankreqhigh,rankreqg,storelevelreq,maximumquantity,boughtquantity,roadfloorsrequired,weeklyfataliskills) VALUES (10,5,%s,%s,%s,%s,0,0,1,1,0,1,%s,%s)'''
+    cur.execute(sql % (str(road_i+1),item,price,quant,floor,fata))
     conn.commit()
-    cur.execute(sql1 % cwe)
-    conn.commit()
+
+def ferias(inp):
+    x = list(inp)
+    y = '0x'+x[0]+x[1]+x[2]+x[3]
+    z = ast.literal_eval(y)
+    global item_id
+    item_id = z
+    
+def untranslated(inp):
+    x = list(inp)
+    y = '0x'+x[2]+x[3]+x[0]+x[1]
+    z = ast.literal_eval(y)
+    global item_id
+    item_id = z
 ###tkinter function
+#root
+def connect():
+    setup()
+    l.config(text='reconnected to database')
 
 #Tab 1    
-def start():
-    try:
-        setup()
-        l.config(text="connected to database")
-    except (Exception, psycopg2.DatabaseError) as error:
-        l.config(text=error)
 def set_tra_ind():
     global inp3
     inp3 = latexxxx.get(1.0, "end-1c")
@@ -274,11 +330,14 @@ def search_gcp():
     global inp2
     inp2 = latexx.get(1.0, "end-1c")
     gcp_search(inp2)
-    join_int(gcp_s)
-    if (len(numb)==0):
-        l.config(text="name not found, its case sensitive")
+    if (gcp_s[0]==(None,)):
+        l.config(text="you have no gcp")
     else:
-        l.config(text="found "+inp2+" with "+str(numb[0])+" gcp")
+        join_int(gcp_s)
+        if (len(numb)==0):
+            l.config(text="name not found, its case sensitive")
+        else:
+            l.config(text="found "+inp2+" with "+str(numb[0])+" gcp")
 
 def set_gcp_all():
     if (t_state[0]==3):
@@ -325,7 +384,7 @@ def set_gcp_ind():
         if (state3[0]==1):
             ber = latexxx.get(1.0, "end-1c")
             a = int(ber)
-            gcp_ch(inp,a)
+            gcp_ch(inp2,a)
             l.config(text="set specific success")
         else:
             l.config(text="subject isnt scanned yet")
@@ -337,7 +396,7 @@ def add_gcp_ind():
             ber = latexxx.get(1.0, "end-1c")
             a = int(ber)
             x = a + numb[0]
-            gcp_ch(inp,x)
+            gcp_ch(inp2,x)
             l.config(text="add specific success")
         else:
             l.config(text="subject isnt scanned yet")
@@ -351,7 +410,7 @@ def sub_gcp_ind():
             x = numb[0]-a
             if (x<0):
                 x=0
-            gcp_ch(inp,x)
+            gcp_ch(inp2,x)
             l.config(text="substract specific success")
         else:
             l.config(text="subject isnt scanned yet")
@@ -479,15 +538,120 @@ def ton_log_all():
 #Tab 7
 
 def up_road():
+    filetypes = (
+                ('csv files', '*.csv'),
+                ('All files', '*.*')
+                )
+    global road_dir
+
+    road_dir = fd.askopenfilename(
+              title='Open a file',
+              initialdir='/',
+              filetypes=filetypes)
     road_up()
     l.config(text='road csv success')
+
+def scan_road():
+    state7[1]=1
+    road_scan()
+    l.config(text='road shop has '+str(road_i)+' item')
     
+def add_road():
+    if (state7[1]==1):
+        if (state7[0]==1):
+            i2 = latex72.get(1.0, "end-1c")
+            i3 = latex73.get(1.0, "end-1c")
+            i4 = latex74.get(1.0, "end-1c")
+            i5 = latex75.get(1.0, "end-1c")
+            if (i2!='' and i3!='' and i4!='' and i5!=''):
+                road_add(item_id,i2,i3,i4,i5)
+                l.config(text='item added')
+                state7[1]=0
+            else:
+                l.config(text='input blank')
+        else:
+            l.config(text='input blank')
+    else:
+        l.config(text='scan first')
+def calc_f():
+    state7[0]=1
+    i1 = latex71.get(1.0, "end-1c")
+    a = len(list(i1))
+    if (a == 4):
+        ferias(i1)
+        l71.config(text=str(item_id))
+    else:
+        l.config(text= "format false")
+
+def calc_u():
+    state7[0]=1
+    i1 = latex71.get(1.0, "end-1c")
+    a = len(list(i1))
+    if (a == 4):
+        untranslated(i1)
+        l71.config(text=str(item_id))
+    else:
+        l.config(text= "format false")
+    
+#Tab 8
+def search_save():
+    t_state[0]=8
+    state8[0]=1
+    global inp8
+    inp8 = latex81.get(1.0, "end-1c")
+    log_id(inp8)
+    join_int(log_i)
+    a = len(log_i)
+    if (a==0):
+        l.config(text='name not found')
+    else :
+        l.config(text=inp8+' found with id='+str(numb[0]))
+
+def insert_save():
+    if (t_state[0]==8):
+        if (state8[0]==1):
+            filetypes = (
+                ('binary files', '*.bin'),
+                ('All files', '*.*')
+                )
+            global savefile
+
+            savefile = fd.askopenfilename(
+                title='Open a file',
+                initialdir='/',
+                filetypes=filetypes)
+            save_save(inp8)
+            l.config(text='upload savefile success')
+        else:
+            l.config(text='name not scanned yet')
+    else:
+        l.config(text='properties in wrong tab or not used yet')
+def insert_partner():
+    if (t_state[0]==8):
+        if (state8[0]==1):
+            filetypes = (
+                ('binary files', '*.bin'),
+                ('All files', '*.*')
+                )
+            global partner
+            partner = fd.askopenfilename(
+                title='Open a file',
+                initialdir='/',
+                filetypes=filetypes)
+            save_partner(inp8)
+            l.config(text='upload partner success')
+        else:
+            l.config(text='name not scanned yet')
+    else:
+        l.config(text='properties in wrong tab or not used yet')
 #Error State
         
 t_state = [0]
 state2 = [0]
 state3 = [0]
 state6 = [0]
+state8 = [0]
+state7 = [0,0]
 
 #Course Calculator aset
 
@@ -497,7 +661,7 @@ def calc():
     z.config(text= str(intend))
 cal=['Hunter Course','Extra Course','Premium Course','Assist Course','N Course',
      'Hiden Course','Support Course','N boost Course']
-val=[4,8,64,256,1073742336,1024,2048,4096]
+val=[4,8,64,256,512,1024,2048,4096]
 
 
 
@@ -512,16 +676,16 @@ cwe = os.getcwd() + '\\road\\road.csv'
 ###TKINTER OBJECT
 
 cb_head = tk.IntVar()
+setup()
 
 ##Root
+
+
 #Button and Label
-l = tk.Label(root, bg='black',fg='white', width=30, text='empty')
-s_but = tk.Button(root,text="start",command=start,bg='green',fg='white',
-                  height=1,width=10)
-l1 = tk.Label(root,fg='red', text='Press Button Bellow First')
+l = tk.Label(root, bg='black',fg='white', width=30, text='connected to database')
+tk.Button(root,bg='green',fg='white',width=10,height=2,text='reconnect',
+                 command=connect).pack()
 #Position
-l1.pack()
-s_but.pack()
 l.pack()
 
 
@@ -613,8 +777,8 @@ but4_trial_a=tk.Button(tab4,bg='red',fg='white',width=10,text='set all trial',
 latex4.place(x=70,y=50)
 latex5.place(x=70,y=100)
 but4_prem.place(x=40, y=130)
-but4_prem_a.place(x=40,y=160)
-but4_trial.place(x=190,y=130)
+but4_prem_a.place(x=190,y=130)
+but4_trial.place(x=40,y=160)
 but4_trial_a.place(x=190,y=160)
 ##Tab 5
 #buton and label
@@ -622,7 +786,7 @@ tk.Label(tab5, text="guild name",fg='blue').place(x=70,y=20)
 tk.Label(tab5, text="rp value",fg='blue').place(x=70,y=70)
 latex6=tk.Text(tab5, height = 1, width = 20)
 latex7=tk.Text(tab5, height = 1, width = 20)
-but5_guild=tk.Button(tab5,bg='red',fg='white',width=10,text='sp spec',
+but5_guild=tk.Button(tab5,bg='red',fg='white',width=10,text='rp spec',
                  command=set_guild_ind)
 but5_guild_a=tk.Button(tab5,bg='red',fg='white',width=10,text='rp all',
                  command=set_guild_all)
@@ -634,6 +798,7 @@ but5_guild_a.place(x=190,y=130)
 
 ##Tab 6
 #button and label
+
 tk.Label(tab6, text="in game name",fg='blue').place(x=70,y=20)
 latex8 = tk.Text(tab6, height = 1, width = 20)
 but81 = tk.Button(tab6,bg='blue',fg='white',width=10,text='search',
@@ -654,9 +819,61 @@ but83.place(x=40,y=180)
 but84.place(x=190,y=150)
 but85.place(x=190,y=180)
 ##Tab 7
-ckbut7 = tk.Checkbutton(tab7, text='Header' ,variable=cb_head, onvalue=1, offvalue=0).place(x=70,y=50)
+#button
+l71 = tk.Label(tab7, text="empty",fg='white',width=5,bg='black')
+tk.Label(tab7, text="Upload csv file",fg='blue').place(x=70,y=20)
+ckbut7 = tk.Checkbutton(tab7, text='Header' ,variable=cb_head, onvalue=1, offvalue=0)
 but71= tk.Button(tab7,bg='red',fg='white',width=10,text='Upload',
-                 command=up_road).place(x=70,y=80)
+                 command=up_road)
+latex71 = tk.Text(tab7, height = 1, width = 5)
+latex72 = tk.Text(tab7, height = 1, width = 10)
+latex73 = tk.Text(tab7, height = 1, width = 10)
+latex74 = tk.Text(tab7, height = 1, width = 10)
+latex75 = tk.Text(tab7, height = 1, width = 10)
+tk.Label(tab7, text="Item id",fg='blue').place(x=20,y=150)
+tk.Label(tab7, text="Item Price",fg='blue').place(x=20,y=180)
+tk.Label(tab7, text="Item quantity",fg='blue').place(x=20,y=210)
+tk.Label(tab7, text="Floor req",fg='blue').place(x=20,y=240)
+tk.Label(tab7, text="Fatalis req",fg='blue').place(x=20,y=270)
+but72= tk.Button(tab7,bg='blue',fg='white',width=10,text='scan',
+                 command=scan_road)
+but73= tk.Button(tab7,bg='red',fg='white',width=10,text='add item',
+                 command=add_road)
+but74= tk.Button(tab7,bg='blue',fg='white',width=10,text='conv ferias',
+                 command=calc_f)
+but75= tk.Button(tab7,bg='blue',fg='white',width=10,text='conv untrans',
+                 command=calc_u)
+#position
+but71.place(x=70,y=80)
+ckbut7.place(x=70,y=50)
+l71.place(x=100,y=150)
+latex71.place(x=150,y=150)
+latex72.place(x=100,y=180)
+latex73.place(x=100,y=210)
+latex74.place(x=100,y=240)
+latex75.place(x=100,y=270)
+but72.place(x=100,y=300)
+but73.place(x=100,y=330)
+but74.place(x=200,y=135)
+but75.place(x=200,y=165)
+
+##Tab 8
+#button
+tk.Label(tab8, text="Character name",fg='blue').place(x=40,y=20)
+latex81 = tk.Text(tab8, height = 1, width = 20)
+but81= tk.Button(tab8,bg='blue',fg='white',width=10,text='search',
+                 command=search_save)
+but82=tk.Button(tab8,bg='red',fg='white',width=10,text='savefile',
+                 command=insert_save)
+but83=tk.Button(tab8,bg='red',fg='white',width=10,text='partner',
+                 command=insert_partner)
+
+#position
+latex81.place(x=40,y=50)
+but81.place(x=40,y=80)
+but82.place(x=40,y=150)
+but83.place(x=40,y=180)
+
 ##end loop
 root.mainloop()
 
