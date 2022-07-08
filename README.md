@@ -1,6 +1,6 @@
 # MHFZ-database-editor  <br />
 ## How to make app work  <br />
-download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.1 <br/>
+download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.2 <br/>
 extract then edit database.ini in database_editor folder to your postgres credential  <br />
 ## How to utilize app  <br />
 open database_editor.exe  <br />
@@ -44,7 +44,6 @@ it will have the set value automatically   <br />
 - use "turn on spe" to reset specific character login boost <br />
 - use "turn off all" to turn off all character login boost <br />
 - use "turn on all" to reset all specific character login boost <br /> <br />
-**_login boost may not worked and may work, fix not done yet_**
 ### Road Edit
 - you can open csv file from your local and upload it to postgres <br />
 - check "header" if have header in your csv file <br />
