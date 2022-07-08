@@ -67,8 +67,10 @@ def setup():
         param = config()
         conn = psycopg2.connect(**param)
         cur = conn.cursor()
+        state0[0]=0
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        state0[0]=1
+        l.config(text="database error")
 
 # Call Funnction
 def join_int(tuple_of_string):
@@ -78,6 +80,13 @@ def join_int(tuple_of_string):
         numb.append(''.join(str(y) for y in tuple_of_string[i]))
     for i in range(len(numb)):
         numb[i]=int(numb[i])
+def join_int2(tuple_of_string):
+    global numb2 
+    numb2 = []
+    for i in range(len(tuple_of_string)):
+        numb2.append(''.join(str(y) for y in tuple_of_string[i]))
+    for i in range(len(numb2)):
+        numb2[i]=int(numb2[i])
 def join_str(tuple_of_string):
     global text
     text = []
@@ -96,15 +105,15 @@ def gcp_all():
     global gcp_a
     gcp_a = cur.fetchall();
     
-def gcp_search(name):
-    sql = '''SELECT gcp FROM public.characters where name = '%s' '''
+def gcp_search(inp):
+    sql = '''SELECT gcp FROM public.characters where id = %s '''
     global gcp_s
-    cur.execute(sql % name)
+    cur.execute(sql % inp)
     gcp_s = cur.fetchall();
 
-def gcp_ch(name,value):
-    sql = """ UPDATE public.characters SET gcp = %s WHERE name = '%s' """
-    cur.execute(sql % (str(value),name))
+def gcp_ch(idn,value):
+    sql = """ UPDATE public.characters SET gcp = %s WHERE id = %s """
+    cur.execute(sql % (str(value),idn))
     conn.commit()
 def rg_name():
     sql = 'SELECT username FROM public.users'
@@ -130,23 +139,23 @@ def rg_def(value):
     sql="""ALTER TABLE public.users ALTER COLUMN rights SET DEFAULT %s """
     cur.execute(sql % str(value))
     conn.commit()
-def tra_ind(name):
+def tra_ind(idn):
     hexa = open(cwd,'rb').read().hex()
-    sql = '''UPDATE characters SET skin_hist=(decode('%s','hex')) WHERE name= '%s' '''
-    cur.execute(sql % (hexa,name))
+    sql = '''UPDATE characters SET skin_hist=(decode('%s','hex')) WHERE id= %s '''
+    cur.execute(sql % (hexa,idn))
     conn.commit()
 def tra_all():
     hexa = open(cwd,'rb').read().hex()
     sql = '''UPDATE characters SET skin_hist=(decode('%s','hex')) '''
     cur.execute(sql % hexa)
     conn.commit()
-def prem_ind(name,value):
-    sql = """ UPDATE public.characters SET gacha_prem = %s WHERE name = '%s' """
-    cur.execute(sql % (str(value),name))
+def prem_ind(idn,value):
+    sql = """ UPDATE public.characters SET gacha_prem = %s WHERE id = %s """
+    cur.execute(sql % (str(value),idn))
     conn.commit()
-def trial_ind(name,value):
-    sql = """ UPDATE public.characters SET gacha_trial = %s WHERE name = '%s' """
-    cur.execute(sql % (str(value),name))
+def trial_ind(idn,value):
+    sql = """ UPDATE public.characters SET gacha_trial = %s WHERE id = %s """
+    cur.execute(sql % (str(value),idn))
     conn.commit()
 def prem_all(value):
     sql = """ UPDATE public.characters SET gacha_prem = %s """
@@ -170,7 +179,7 @@ def guild_name():
     global guild_n
     guild_n = cur.fetchall();
 def log_id(name):
-    sql = '''SELECT user_id FROM public.characters WHERE name='%s' '''
+    sql = '''SELECT id FROM public.characters WHERE name='%s' '''
     cur.execute(sql % name)
     global log_i
     log_i  = cur.fetchall();
@@ -198,7 +207,6 @@ def log_ton_all():
     cur.execute(sql1)
     cur.execute(sql2)
     conn.commit()
-
 def road_up():
     file = open(road_dir)
     csvrd = csv.reader(file)
@@ -221,15 +229,15 @@ def road_up():
             cur.execute(sql % (a[0][0],a[0][1],a[0][2],a[0][3],a[0][4],a[0][5],a[0][6],a[0][7],a[0][8],a[0][9],a[0][10],a[0][11],a[0][12],a[0][13]))
     conn.commit()
             
-def save_save(name):
+def save_save(idn):
     hexa = open(savefile,'rb').read().hex()
-    sql = '''UPDATE characters SET savedata=(decode('%s','hex')) WHERE name= '%s' '''
-    cur.execute(sql % (hexa,name))
+    sql = '''UPDATE characters SET savedata=(decode('%s','hex')) WHERE id= %s '''
+    cur.execute(sql % (hexa,idn))
     conn.commit()
-def save_partner(name):
+def save_partner(idn):
     hexa = open(partner,'rb').read().hex()
-    sql = '''UPDATE characters SET partner=(decode('%s','hex')) WHERE name= '%s' '''
-    cur.execute(sql % (hexa,name))
+    sql = '''UPDATE characters SET partner=(decode('%s','hex')) WHERE id= %s '''
+    cur.execute(sql % (hexa,idn))
     conn.commit()
 def road_scan():
     sql = 'SELECT itemhash FROM public.normal_shop_items'
@@ -256,28 +264,97 @@ def untranslated(inp):
     z = ast.literal_eval(y)
     global item_id
     item_id = z
+def check_id(idnumb):
+    sql = '''SELECT name FROM public.characters WHERE id=%s '''
+    sql1= '''SELECT user_id FROM public.characters WHERE id=%s'''
+    sql2 = '''SELECT username FROM public.users WHERE id= %s '''
+    cur.execute(sql % idnumb)
+    global nm
+    nm = cur.fetchall();
+    join_str(nm)
+    nm = text[0]
+    cur.execute(sql1 % idnumb)
+    global nd
+    uid = cur.fetchall();
+    join_int2(uid)
+    cur.execute(sql2 % numb2[0])
+    nd = cur.fetchall();
+    join_str(nd)
+    nd = text[0]
+
 ###tkinter function
+
+##ERROR define
+def multiple_err(name):
+    log_id(name)
+    join_int(log_i)
+    a = len(numb)
+    global cid
+    if a>=2 :
+        l.config(text='same name with id = '+str([numb[i] for i in range(a)]))
+        pick_id()
+    elif (a==0):
+        l.config(text='name not found')
+    elif (a==1):
+        l.config(text=name+' found with id '+str(numb[0]))
+    cid = numb[0]
+                 
+def timeout():
+    try:
+        sql = 'SELECT username FROM public.users'
+        cur.execute(sql)
+    except psycopg2.OperationalError as error:
+        l.config(text='connection timed out or failed to connect')
+        
+def drop_c(ch):
+    ch = variable.get()
+    numb[0] = ch
+    l.config(text='you selected id = '+str(numb[0]))
+    global cid
+    cid = numb[0]
+    root1.destroy()
+def pick_id():
+    global root1
+    root1 = tk.Tk()
+    root1.title("pick id")
+    tabControl = ttk.Notebook(root1)
+    a = len(numb)
+    for i in range(a):
+        check_id(numb[i])
+        tk.Label(root1, text='id '+str(numb[i])+' have c_name ='+nm+' u_name ='+nd
+                 ,fg='white',bg='black').pack()
+    global variable
+    variable = tk.StringVar()
+    variable.set(numb[a-1])
+    tk.OptionMenu(root1,variable,*numb,command=drop_c).pack()
+    root1.mainloop()
+
 #root
 def connect():
     setup()
-    l.config(text='reconnected to database')
+    if (state0[0]==0):
+        l.config(text='reconnected to database')
 
-#Tab 1    
-def set_tra_ind():
+#Tab 1
+
+def search_tra():
+    t_state[0]=1
+    state1[0]=1
     global inp3
     inp3 = latexxxx.get(1.0, "end-1c")
-    gcp_name()
-    join_str(gcp_n)
-    a = 0
-    for i in range(len(text)):
-        if (text[i]==inp3):
-            a = 1
-    if (a==1):
-        tra_ind(inp3)
-        l.config(text='updating mog success')
-    else:
-        l.config(text='name not found')
+    multiple_err(inp3)
     
+    
+def set_tra_ind():
+    if (t_state[0]==1):
+        if (state1[0]==1):
+            tra_ind(cid)
+            l.config(text="set specific success")
+        else:
+            l.config(text="subject isnt scanned yet")
+    else:
+        l.config(text= "properties in wrong tab or not used yet")
+        
 def set_tra_all():
     tra_all()
     l.config(text='updating all mog success')
@@ -329,13 +406,14 @@ def search_gcp():
     t_state[0]=3
     global inp2
     inp2 = latexx.get(1.0, "end-1c")
-    gcp_search(inp2)
-    if (gcp_s[0]==(None,)):
-        l.config(text="you have no gcp")
+    multiple_err(inp2)
+    gcp_search(cid)
+    join_int(gcp_s)
+    if (len(numb)==0):
+        l.config(text="name not found, its case sensitive")
     else:
-        join_int(gcp_s)
-        if (len(numb)==0):
-            l.config(text="name not found, its case sensitive")
+        if (gcp_s[0]==(None,)):
+            l.config(text="you have no gcp")
         else:
             l.config(text="found "+inp2+" with "+str(numb[0])+" gcp")
 
@@ -384,7 +462,7 @@ def set_gcp_ind():
         if (state3[0]==1):
             ber = latexxx.get(1.0, "end-1c")
             a = int(ber)
-            gcp_ch(inp2,a)
+            gcp_ch(cid,a)
             l.config(text="set specific success")
         else:
             l.config(text="subject isnt scanned yet")
@@ -396,7 +474,7 @@ def add_gcp_ind():
             ber = latexxx.get(1.0, "end-1c")
             a = int(ber)
             x = a + numb[0]
-            gcp_ch(inp2,x)
+            gcp_ch(cid,x)
             l.config(text="add specific success")
         else:
             l.config(text="subject isnt scanned yet")
@@ -410,49 +488,46 @@ def sub_gcp_ind():
             x = numb[0]-a
             if (x<0):
                 x=0
-            gcp_ch(inp2,x)
+            gcp_ch(cid,x)
             l.config(text="substract specific success")
         else:
             l.config(text="subject isnt scanned yet")
     else:
         l.config(text= "properties in wrong tab or not used yet")
 #Tab 4
+
+def search_gacha():
+    t_state[0]=4
+    state4[0]=1
+    ber = latex4.get(1.0, "end-1c")
+    multiple_err(ber)
+    
 def set_prem_ind():
-    ber = latex5.get(1.0, "end-1c")
-    inp = latex4.get(1.0, "end-1c")
-    if (ber!='' and inp!=''):
-        a = int(ber)
-        gcp_name()
-        join_str(gcp_n)
-        a = 0
-        for i in range(len(text)):
-            if (text[i]==inp):
-                a = 1
-        if (a==1):
-            prem_ind(inp,ber)
-            l.config(text='set gacha prem success')
+    inp = latex5.get(1.0, "end-1c")
+    if (t_state[0]==4):
+        if (state4[0]==1):
+            if (inp!=''):
+                prem_ind(cid,inp)
+                l.config(text="set specific success")
+            else:
+                l.config(text='fill your value input')
         else:
-            l.config(text='name not found')
+            l.config(text="subject isnt scanned yet")
     else:
-        l.config(text='parameter not inserted yet')
+        l.config(text= "properties in wrong tab or not used yet")
 def set_trial_ind():
     ber = latex5.get(1.0, "end-1c")
-    inp = latex4.get(1.0, "end-1c")
-    if (ber!='' and inp!=''):
-        a = int(ber)
-        gcp_name()
-        join_str(gcp_n)
-        a = 0
-        for i in range(len(text)):
-            if (text[i]==inp):
-                a = 1
-        if (a==1):
-            trial_ind(inp,ber)
-            l.config(text='set gacha trial success')
+    if (t_state[0]==4):
+        if (state4[0]==1):
+            if (ber!=''):
+                trial_ind(cid,ber)
+                l.config(text="set specific success")
+            else:
+                l.config(text='fill your value input')
         else:
-            l.config(text='name not found')
+            l.config(text="subject isnt scanned yet")
     else:
-        l.config(text='parameter not inserted yet')
+        l.config(text= "properties in wrong tab or not used yet")
 def set_prem_all():
     ber = latex5.get(1.0, "end-1c")
     if (ber!=''):
@@ -597,15 +672,8 @@ def calc_u():
 def search_save():
     t_state[0]=8
     state8[0]=1
-    global inp8
     inp8 = latex81.get(1.0, "end-1c")
-    log_id(inp8)
-    join_int(log_i)
-    a = len(log_i)
-    if (a==0):
-        l.config(text='name not found')
-    else :
-        l.config(text=inp8+' found with id='+str(numb[0]))
+    multiple_err(inp8)
 
 def insert_save():
     if (t_state[0]==8):
@@ -620,7 +688,7 @@ def insert_save():
                 title='Open a file',
                 initialdir='/',
                 filetypes=filetypes)
-            save_save(inp8)
+            save_save(cid)
             l.config(text='upload savefile success')
         else:
             l.config(text='name not scanned yet')
@@ -638,7 +706,7 @@ def insert_partner():
                 title='Open a file',
                 initialdir='/',
                 filetypes=filetypes)
-            save_partner(inp8)
+            save_partner(cid)
             l.config(text='upload partner success')
         else:
             l.config(text='name not scanned yet')
@@ -647,8 +715,12 @@ def insert_partner():
 #Error State
         
 t_state = [0]
+state0 = [0]
+state1 = [0]
 state2 = [0]
 state3 = [0]
+state4 = [0]
+state5 = [0]
 state6 = [0]
 state8 = [0]
 state7 = [0,0]
@@ -676,15 +748,17 @@ cwe = os.getcwd() + '\\road\\road.csv'
 ###TKINTER OBJECT
 
 cb_head = tk.IntVar()
-setup()
 
 ##Root
 
 
 #Button and Label
 l = tk.Label(root, bg='black',fg='white', width=30, text='connected to database')
+
 tk.Button(root,bg='green',fg='white',width=10,height=2,text='reconnect',
                  command=connect).pack()
+
+setup()
 #Position
 l.pack()
 
@@ -697,10 +771,13 @@ but1_ind=tk.Button(tab1,bg='red',fg='white',width=10,text='set specific',
                  command=set_tra_ind)
 but1_all=tk.Button(tab1,bg='red',fg='white',width=10,text='set all',
                  command=set_tra_all)
+but11= tk.Button(tab1,bg='blue',fg='white',width=10,text='search',
+                 command=search_tra)
 #position
 latexxxx.place(x=50,y=50)
-but1_ind.place(x=50,y=80)
-but1_all.place(x=50,y=110)
+but11.place(x=50,y=80)
+but1_ind.place(x=50,y=110)
+but1_all.place(x=50,y=140)
 ##Tab 2
 tk.Label(tab2, text="username",fg='blue').place(x=50,y=20)
 for i in range(len(cal)):
@@ -762,7 +839,7 @@ but3_sub_a.place(x=190,y=240)
 ##Tab 4
 #Button and Label
 tk.Label(tab4, text="character name",fg='blue').place(x=70,y=20)
-tk.Label(tab4, text="coin value",fg='blue').place(x=70,y=70)
+tk.Label(tab4, text="coin value",fg='blue').place(x=70,y=120)
 latex4 = tk.Text(tab4, height = 1, width = 20)
 latex5 = tk.Text(tab4, height = 1, width = 20)
 but4_prem=tk.Button(tab4,bg='red',fg='white',width=10,text='set spe prem',
@@ -773,13 +850,16 @@ but4_trial=tk.Button(tab4,bg='red',fg='white',width=10,text='set spe trial',
                  command=set_trial_ind)
 but4_trial_a=tk.Button(tab4,bg='red',fg='white',width=10,text='set all trial',
                  command=set_trial_all)
+but41 = tk.Button(tab4,bg='blue',fg='white',width=10,text='search',
+                 command=search_gacha)
 #position
 latex4.place(x=70,y=50)
-latex5.place(x=70,y=100)
-but4_prem.place(x=40, y=130)
-but4_prem_a.place(x=190,y=130)
-but4_trial.place(x=40,y=160)
-but4_trial_a.place(x=190,y=160)
+but41.place(x=70,y=80)
+latex5.place(x=70,y=140)
+but4_prem.place(x=40, y=170)
+but4_prem_a.place(x=190,y=170)
+but4_trial.place(x=40,y=200)
+but4_trial_a.place(x=190,y=200)
 ##Tab 5
 #buton and label
 tk.Label(tab5, text="guild name",fg='blue').place(x=70,y=20)
@@ -867,7 +947,6 @@ but82=tk.Button(tab8,bg='red',fg='white',width=10,text='savefile',
                  command=insert_save)
 but83=tk.Button(tab8,bg='red',fg='white',width=10,text='partner',
                  command=insert_partner)
-
 #position
 latex81.place(x=40,y=50)
 but81.place(x=40,y=80)
