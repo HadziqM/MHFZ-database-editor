@@ -1,6 +1,6 @@
 # MHFZ-database-editor  <br />
 ## How to make app work  <br />
-download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.2 <br/>
+download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.3 <br/>
 extract then edit database.ini in database_editor folder to your postgres credential  <br />
 ## How to utilize app  <br />
 open database_editor.exe  <br />
@@ -36,6 +36,10 @@ it will have the set value automatically   <br />
 - use "set all prem" to set premium gacha coin in input value to all character    <br />
 - use "set all trial" to set trial gacha coin in input value to all character   <br />
 ### Guild Edit
+- use "scan" to scan all guild in db, then select available guild in dropbox <br />
+- use "search" to see your id, its needed for certain command <br />
+- use "add to guild" to forcefully add your charachter to selected guild <br />
+- use "change leader" to forcefully assign your charachter to the guild <br />
 - use "rp spec" to set RP from input value to specific guild name   <br />
 - use "rp all" to set RP from input value to all guild in database  <br />
 ### Login Boost Edit
