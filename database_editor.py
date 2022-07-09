@@ -165,9 +165,9 @@ def trial_all(value):
     sql = """ UPDATE public.characters SET gacha_trial = %s """
     cur.execute(sql % str(value))
     conn.commit()
-def guild_ind(name,value):
-    sql = """ UPDATE public.guilds SET rank_rp = %s WHERE name = '%s' """
-    cur.execute(sql % (str(value),name))
+def guild_ind(inp,value):
+    sql = """ UPDATE public.guilds SET rank_rp = %s WHERE id = %s """
+    cur.execute(sql % (str(value),inp))
     conn.commit()
 def guild_all(value):
     sql = """ UPDATE public.guilds SET rank_rp = %s"""
@@ -178,6 +178,42 @@ def guild_name():
     cur.execute(sql)
     global guild_n
     guild_n = cur.fetchall();
+def guild_id(inp):
+    sql = '''SELECT id FROM public.guilds WHERE name = '%s' '''
+    cur.execute(sql % inp)
+    global guild_i
+    guild_i = cur.fetchall();
+    join_int2(guild_i)
+    guild_i=numb2[0]
+def guild_info(inp):
+    sql1='''SELECT character_id FROM public.guild_characters WHERE guild_id = %s '''
+    sql='''SELECT id FROM public.guild_characters '''
+    cur.execute(sql1 % inp)
+    global gd_char
+    global gd_index
+    gd_char = cur.fetchall();
+    cur.execute(sql)
+    gd_index = cur.fetchall();
+def leader(inp,gd):
+    sql='''UPDATE public.guilds SET leader_id=%s WHERE id=%s '''
+    sql1 = ''' INSERT INTO guild_characters (id,guild_id,character_id,joined_at,avoid_leadership,order_index) VALUES (%s,%s,%s,DEFAULT,DEFAULT,DEFAULT)'''
+    sql3='''UPDATE public.guild_characters SET avoid_leadership=false WHERE character_id=%s '''
+    join_int2(gd_index)
+    numb2.sort()
+    idg=numb2[-1]+1
+    cur.execute(sql % (inp,gd))
+    if ( cb_guild.get()==0):
+        cur.execute(sql1 % (idg,inp,gd))
+    elif ( cb_guild.get()==1):
+        cur.execute(sql3 % inp)
+    conn.commit()
+def member(inp,gd):
+    sql = ''' INSERT INTO guild_characters (id,guild_id,character_id,joined_at,avoid_leadership,order_index) VALUES (%s,%s,%s,DEFAULT,true,DEFAULT)'''
+    join_int2(gd_index)
+    numb2.sort()
+    idg=numb2[-1]+1
+    cur.execute(sql % (idg,gd,inp))
+    conn.commit()
 def log_id(name):
     sql = '''SELECT id FROM public.characters WHERE name='%s' '''
     cur.execute(sql % name)
@@ -243,27 +279,18 @@ def road_scan():
     sql = 'SELECT itemhash FROM public.normal_shop_items'
     cur.execute(sql)
     global road_s
+    global road_v
     road_s = cur.fetchall();
     global road_i
-    road_i = len(road_s)    
+    join_int2(road_s)
+    numb2.sort()
+    road_i=numb2[-1]+1
+    road_v=len(road_s)
 def road_add(item,price,quant,floor,fata):
     sql = ''' INSERT INTO normal_shop_items (shoptype,shopid,itemhash,itemid,points,tradequantity,rankreqlow,rankreqhigh,rankreqg,storelevelreq,maximumquantity,boughtquantity,roadfloorsrequired,weeklyfataliskills) VALUES (10,5,%s,%s,%s,%s,0,0,1,1,0,1,%s,%s)'''
-    cur.execute(sql % (str(road_i+1),item,price,quant,floor,fata))
+    cur.execute(sql % (road_i,item,price,quant,floor,fata))
     conn.commit()
 
-def ferias(inp):
-    x = list(inp)
-    y = '0x'+x[0]+x[1]+x[2]+x[3]
-    z = ast.literal_eval(y)
-    global item_id
-    item_id = z
-    
-def untranslated(inp):
-    x = list(inp)
-    y = '0x'+x[2]+x[3]+x[0]+x[1]
-    z = ast.literal_eval(y)
-    global item_id
-    item_id = z
 def check_id(idnumb):
     sql = '''SELECT name FROM public.characters WHERE id=%s '''
     sql1= '''SELECT user_id FROM public.characters WHERE id=%s'''
@@ -421,7 +448,11 @@ def set_gcp_all():
     if (t_state[0]==3):
         if (state3[0]==2):
             ber = latexxx.get(1.0, "end-1c")
-            a = int(ber)
+            try:
+                a = int(ber)
+            except ValueError as error:
+                l.config(text='input must be integer')
+                return None
             for i in range(len(numb)):
                 gcp_ch(text[i],a)
             l.config(text="set all success")
@@ -433,7 +464,11 @@ def add_gcp_all():
     if (t_state[0]==3):
         if (state3[0]==2):
             ber = latexxx.get(1.0, "end-1c")
-            a = int(ber)
+            try:
+                a = int(ber)
+            except ValueError as error:
+                l.config(text='input must be integer')
+                return None
             for i in range(len(numb)):
                 numb[i] = a +numb[i]
                 gcp_ch(text[i],numb[i])
@@ -446,7 +481,11 @@ def sub_gcp_all():
     if (t_state[0]==3):
         if (state3[0]==2):
             ber = latexxx.get(1.0, "end-1c")
-            a = int(ber)
+            try:
+                a = int(ber)
+            except ValueError as error:
+                l.config(text='input must be integer')
+                return None
             for i in range(len(numb)):
                 numb[i] = numb[i]- a
                 if (numb[i]<0):
@@ -461,7 +500,11 @@ def set_gcp_ind():
     if (t_state[0]==3):
         if (state3[0]==1):
             ber = latexxx.get(1.0, "end-1c")
-            a = int(ber)
+            try:
+                a = int(ber)
+            except ValueError as error:
+                l.config(text='input must be integer')
+                return None
             gcp_ch(cid,a)
             l.config(text="set specific success")
         else:
@@ -472,7 +515,11 @@ def add_gcp_ind():
     if (t_state[0]==3):
         if (state3[0]==1):
             ber = latexxx.get(1.0, "end-1c")
-            a = int(ber)
+            try:
+                a = int(ber)
+            except ValueError as error:
+                l.config(text='input must be integer')
+                return None
             x = a + numb[0]
             gcp_ch(cid,x)
             l.config(text="add specific success")
@@ -484,7 +531,11 @@ def sub_gcp_ind():
     if (t_state[0]==3):
         if (state3[0]==1):
             ber = latexxx.get(1.0, "end-1c")
-            a = int(ber)
+            try:
+                a = int(ber)
+            except ValueError as error:
+                l.config(text='input must be integer')
+                return None
             x = numb[0]-a
             if (x<0):
                 x=0
@@ -507,7 +558,12 @@ def set_prem_ind():
     if (t_state[0]==4):
         if (state4[0]==1):
             if (inp!=''):
-                prem_ind(cid,inp)
+                try:
+                    a = int(inp)
+                except ValueError as error:
+                    l.config(text='input must be integer')
+                return None
+                prem_ind(cid,a)
                 l.config(text="set specific success")
             else:
                 l.config(text='fill your value input')
@@ -520,7 +576,12 @@ def set_trial_ind():
     if (t_state[0]==4):
         if (state4[0]==1):
             if (ber!=''):
-                trial_ind(cid,ber)
+                try:
+                    a = int(ber)
+                except ValueError as error:
+                    l.config(text='input must be integer')
+                return None
+                trial_ind(cid,a)
                 l.config(text="set specific success")
             else:
                 l.config(text='fill your value input')
@@ -531,46 +592,109 @@ def set_trial_ind():
 def set_prem_all():
     ber = latex5.get(1.0, "end-1c")
     if (ber!=''):
-        a = int(ber)
-        prem_all(ber)
+        try:
+            a = int(ber)
+        except ValueError as error:
+            l.config(text='input must be integer')
+            return None
+        prem_all(a)
         l.config(text='set gacha all prem success')
     else:
         l.config(text='parameter not inserted yet')
 def set_trial_all():
     ber = latex5.get(1.0, "end-1c")
     if (ber!=''):
-        a = int(ber)
-        trial_all(ber)
+        try:
+            a = int(ber)
+        except ValueError as error:
+            l.config(text='input must be integer')
+            return None
+        trial_all(a)
         l.config(text='set gacha all trial success')
     else:
         l.config(text='parameter not inserted yet')
 #Tab 5
-def set_guild_ind():
-    ber = latex7.get(1.0, "end-1c")
-    inp = latex6.get(1.0, "end-1c")
-    if (ber!='' and inp!=''):
-        a = int(ber)
-        guild_name()
-        join_str(guild_n)
-        a = 0
-        for i in range(len(text)):
-            if (text[i]==inp):
-                a = 1
-        if (a==1):
-            guild_ind(inp,ber)
-            l.config(text='set guild rp success')
+def search_gid():
+    t_state[0]=5
+    state5[0]=1
+    ber = latex51.get(1.0, "end-1c")
+    multiple_err(ber)
+def scan_gid():
+    t_state[0]=5
+    state5[1]=1
+    guild_name()
+    join_str(guild_n)
+    a = len(text)
+    global variable51
+    variable51 = tk.StringVar()
+    variable51.set(text[a-1])
+    global drop
+    drop = tk.OptionMenu(tab5,variable51,*text,command=drop_g).place(x=150,y=20)
+def drop_g(ch):
+    ch = variable51.get()
+    inp = ch
+    search_git(inp)
+
+def search_git(ber):
+    guild_id(ber)
+    guild_info(guild_i)
+    a = len(gd_char)
+    l.config(text=ber+'found with id='+str(guild_i)+' and '+str(a)+' member')
+
+def add_mem():
+    if t_state[0]==5:
+        if state5[0]==1:
+            if state5[1]==1:
+                member(cid,guild_i)
+                l.config(text='succesfully added to guild')
+            else:
+                l.config(text='select guild first')
         else:
-            l.config(text='name not found')
+            l.config(text='character id empty')
     else:
-        l.config(text='parameter not inserted yet')
-def set_guild_all():
-    ber = latex7.get(1.0, "end-1c")
-    if (ber!=''):
+        l.config(text='properties in wrong tab')
+def change_lead():
+    if t_state[0]==5:
+        if state5[1]==1:
+            leader(cid,guild_i)
+            l.config(text='succesfully changed leader')
+        else:
+            l.config(text='select guild first')
+    else:
+        l.config(text='properties in wrong tab')
+def set_guild_ind():
+    ber = latex52.get(1.0, "end-1c")
+    try:
         a = int(ber)
-        guild_all(ber)
-        l.config(text='set all guild rp success')
+    except ValueError as error:
+        l.config(text='input must be integer')
+        return None
+    if t_state[0]==5:
+        if ber!='':
+            if state5[1]==1:
+                guild_ind(guild_i,a)
+                l.config(text='set rp success')
+            else:
+                l.config(text='select guild first')
+        else:
+            l.config(text='rp value empty')
     else:
-        l.config(text='parameter not inserted yet')
+        l.config(text='properties in wrong tab')
+def set_guild_all():
+    ber = latex52.get(1.0, "end-1c")
+    try:
+        a = int(ber)
+    except ValueError as error:
+        l.config(text='input must be integer')
+        return None
+    if t_state[0]==5:
+        if ber!='':
+            guild_all(a)
+            l.config(text='succesfully changed leader')
+        else:
+            l.config(text='rp value empty')
+    else:
+        l.config(text='properties in wrong tab')
 #Tab 6
 def id_search():
     t_state[0]=6
@@ -629,7 +753,7 @@ def up_road():
 def scan_road():
     state7[1]=1
     road_scan()
-    l.config(text='road shop has '+str(road_i)+' item')
+    l.config(text='road shop has '+str(road_v)+' item')
     
 def add_road():
     if (state7[1]==1):
@@ -639,6 +763,14 @@ def add_road():
             i4 = latex74.get(1.0, "end-1c")
             i5 = latex75.get(1.0, "end-1c")
             if (i2!='' and i3!='' and i4!='' and i5!=''):
+                try:
+                    i2 = int(i2)
+                    i3 = int(i3)
+                    i4 = int(i4)
+                    i5 = int(i5)
+                except ValueError as error:
+                    l.config(text='input must be integer')
+                    return None
                 road_add(item_id,i2,i3,i4,i5)
                 l.config(text='item added')
                 state7[1]=0
@@ -720,19 +852,39 @@ state1 = [0]
 state2 = [0]
 state3 = [0]
 state4 = [0]
-state5 = [0]
+state5 = [0,0,0]
 state6 = [0]
 state8 = [0]
 state7 = [0,0]
 
 #Course Calculator aset
+def ferias(inp):
+    x = list(inp)
+    y = '0x'+x[0]+x[1]+x[2]+x[3]
+    try:
+        z = ast.literal_eval(y)
+    except SyntaxError as error:
+        l.config(text='you are not inputing hexa')
+    global item_id
+    item_id = z
+    
+def untranslated(inp):
+    x = list(inp)
+    y = '0x'+x[2]+x[3]+x[0]+x[1]
+    global item_id
+    try:
+        z = ast.literal_eval(y)
+    except SyntaxError as error:
+        l.config(text='you are not inputing hexa')
+    item_id = z
 
 def calc():
     global intend
     intend = 2 + var0.get()+ var1.get()+ var2.get()+ var3.get()+ var4.get()+ var5.get()+ var6.get()+ var7.get()
     z.config(text= str(intend))
+    
 cal=['Hunter Course','Extra Course','Premium Course','Assist Course','N Course',
-     'Hiden Course','Support Course','N boost Course']
+      'Hiden Course','Support Course','N boost Course']
 val=[4,8,64,256,512,1024,2048,4096]
 
 
@@ -748,12 +900,13 @@ cwe = os.getcwd() + '\\road\\road.csv'
 ###TKINTER OBJECT
 
 cb_head = tk.IntVar()
+cb_guild=tk.IntVar()
 
 ##Root
 
 
 #Button and Label
-l = tk.Label(root, bg='black',fg='white', width=30, text='connected to database')
+l = tk.Label(root, bg='black',fg='white', width=40, text='connected to database')
 
 tk.Button(root,bg='green',fg='white',width=10,height=2,text='reconnect',
                  command=connect).pack()
@@ -862,20 +1015,29 @@ but4_trial.place(x=40,y=200)
 but4_trial_a.place(x=190,y=200)
 ##Tab 5
 #buton and label
-tk.Label(tab5, text="guild name",fg='blue').place(x=70,y=20)
-tk.Label(tab5, text="rp value",fg='blue').place(x=70,y=70)
-latex6=tk.Text(tab5, height = 1, width = 20)
-latex7=tk.Text(tab5, height = 1, width = 20)
+tk.Label(tab5, text="character name",fg='blue').place(x=70,y=60)
+tk.Label(tab5, text="rp value",fg='blue').place(x=70,y=180)
+latex51=tk.Text(tab5, height = 1, width = 20)
+latex52=tk.Text(tab5, height = 1, width = 20)
 but5_guild=tk.Button(tab5,bg='red',fg='white',width=10,text='rp spec',
                  command=set_guild_ind)
 but5_guild_a=tk.Button(tab5,bg='red',fg='white',width=10,text='rp all',
                  command=set_guild_all)
+ckbut5 = tk.Checkbutton(tab5, text='CHECK THIS if youare \n on guild already' ,variable=cb_guild, onvalue=1, offvalue=0)
+but51 = tk.Button(tab5,bg='blue',fg='white',width=10,text='search',
+                 command=search_gid).place(x=40,y=110)
+but52 = tk.Button(tab5,bg='blue',fg='white',width=10,text='scan guild',
+                 command=scan_gid).place(x=40,y=30)
+but54 = tk.Button(tab5,bg='red',fg='white',width=10,text='add to guild',
+                 command=add_mem).place(x=40,y=150)
+but55 = tk.Button(tab5,bg='red',fg='white',width=10,text='change leader',
+                 command=change_lead).place(x=190,y=150)
 #position
-latex6.place(x=70,y=50)
-latex7.place(x=70,y=100)
-but5_guild.place(x=40,y=130)
-but5_guild_a.place(x=190,y=130)
-
+latex51.place(x=70,y=80)
+ckbut5.place(x=160,y=110)
+latex52.place(x=70,y=200)
+but5_guild.place(x=40,y=230)
+but5_guild_a.place(x=190,y=230)
 ##Tab 6
 #button and label
 
