@@ -1,6 +1,7 @@
 import os
 import ast
 import csv
+import glob
 import psycopg2
 import tkinter as tk
 from configparser import ConfigParser
@@ -346,6 +347,7 @@ err_inp=['nothing','input is not integer','input is not hexadecimal']
 state_con=[0]
 state_ch=[0]
 state9=[0]
+state_id=[0]
 ##Error function
 #input error
 def err_l():
@@ -397,13 +399,19 @@ def inp_id(inp):
                  ,fg='white',bg='blue').pack()
             tk.OptionMenu(pickid,poly,*a,command=drop_c).pack()
             pickid.mainloop()
-            return mul
 def drop_c(ch):
     ch = poly.get()
     l.config(text='you selected id = '+str(ch))
     pickid.destroy()
-    global mul
-    mul = ch
+    if state_id[0]==0:
+        global cid
+        cid = int(ch)
+        state_ch[0]=0
+        common_edit()
+    else:
+        global cid1
+        cid1=int(ch)
+        guild_prep()
             
 
 ###Tkinter Button func
@@ -615,24 +623,31 @@ def set_rp_all():
 
 def mem_of_guild():
     a=guildx.get(1.0, "end-1c")
+    state_id[0]=1
     a = inp_id(a)
     if a==None:
         return None
     global cid1
     cid1=a
-    b = guild_stat(a)
+    guild_prep()
+def guild_prep():
+    b = guild_stat(cid1)
+    global butt_add,butt_ch,butt_ld
     if b==None:
         l.config(text='you are not in any guild')
-        tk.Button(tab8,bg='red',fg='white',width=10,text='add to guild',
-                 command=add_to_guild).place(x=40,y=260)
+        butt_add=tk.Button(tab8,bg='red',fg='white',width=10,text='add to guild',
+                 command=add_to_guild)
+        butt_add.place(x=40,y=260)
     else:
         l.config(text='you are in guild '+b)
         global neg
         neg = b
-        tk.Button(tab8,bg='red',fg='white',width=10,text='change guild',
-                 command=change_gd).place(x=40,y=260)
-        tk.Button(tab8,bg='red',fg='white',width=10,text='set leader',
-                 command=set_leader).place(x=190,y=260)
+        butt_ch=tk.Button(tab8,bg='red',fg='white',width=10,text='change guild',
+                 command=change_gd)
+        butt_ch.place(x=40,y=260)
+        butt_ld=tk.Button(tab8,bg='red',fg='white',width=10,text='set leader',
+                 command=set_leader)
+        butt_ld.place(x=190,y=260)
 def add_to_guild():
     a=guild_name()
     if a==None:
@@ -648,6 +663,7 @@ def get_guild(ch):
     member_add(cid1,guild_id(ch))
     l.config(text='added to guild')
     d1.place_forget()
+    butt_add.place_forget()
 def change_gd():
     a=guild_name()
     if len(a)==1:
@@ -664,9 +680,11 @@ def get_chage(ch):
     change_guild(cid1,guild_id(ch))
     l.config(text='seccessfully change guild')
     d2.place_forget()
+    butt_ch.place_forget()
 def set_leader():
     leader(cid1,guild_id(neg))
     l.config(text='successfully set as leader')
+    butt_ld.place_forget()
 #Road
 def calc_f():
     state9[0]=1
@@ -808,7 +826,7 @@ def common_edit():
     tabControl.pack(expand = 1, fill ="both")
     tomain=tk.Button(root,bg='yellow',fg='black',width=10,height=1,text='back to main',
                  command=back)
-    tomain.pack(side=tk.BOTTOM)
+    tomain.pack(side=tk.TOP)
     tab1.destroy()
     
     #course
@@ -927,6 +945,7 @@ def mod_edit():
 def search_char():
     inp = latex.get(1.0, "end-1c")
     global cid
+    state_id[0]=0
     cid=inp_id(inp)
     if cid==None:
         return None
