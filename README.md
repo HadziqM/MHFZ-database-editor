@@ -1,12 +1,13 @@
 # MHFZ-database-editor  <br />
 ## How to make app work  <br />
-download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/2.3 <br/>
+download latest release on https://github.com/HadziqM/MHFZ-database-editor/releases/tag/3.0 <br/>
 extract then edit database.ini in database_editor folder to your postgres credential  <br />
+edit database - Copy.ini to your other postgres credential if you have another <br />
 ## How to utilize app  <br />
 open database_editor.exe  <br />
 the label in bottom of app is kind of terminal to show output  <br />
 if you got cur not defined error in console then its connection timed out <br />
-press "reconnect" button to solve the issue <br />
+just click change db button twice to reconnect to the current db <br />
 ### Course editor  <br />
 - you can search your user name with "search" button  <br />
 - you can checklist the course to select course you need to operate with  <br />
